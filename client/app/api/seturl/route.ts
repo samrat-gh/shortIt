@@ -1,8 +1,9 @@
+const BACKEND_API = process.env.BACKEND_API;
+
 const POST = async (req: any) => {
   const { url } = await req.json();
   console.log(url);
 
-  const BACKEND_API = "http://localhost:8000";
   try {
     const response = await fetch(`${BACKEND_API}/api/shorturl`, {
       method: "POST",

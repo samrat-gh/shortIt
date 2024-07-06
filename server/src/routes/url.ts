@@ -1,11 +1,23 @@
 import express from "express";
-import { createUrl, getAllUrl } from "../controllers/url.controller";
+import {
+  createUrl,
+  DeleteUrl,
+  getAllUrl,
+  getUrl,
+} from "../controllers/url.controller";
 
 const router = express.Router();
 
+// To Create new link
 router.post("/shorturl", createUrl);
+
+// To Get all the links
 router.get("/shorturl", getAllUrl);
-// router.post("/shorturl/:id");
-// router.get("/shorturl/:id ");
+
+// To Delete a route
+router.get("/deleteshorturl/:id", DeleteUrl);
+
+// To get Details of a Specifc link
+router.get("/shorturl/:id", getUrl);
 
 export default router;

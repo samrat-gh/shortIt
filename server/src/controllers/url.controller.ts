@@ -1,4 +1,4 @@
-import { Request, Response } from "express";
+import { Request, response, Response } from "express";
 import { Url } from "../models/Url.model";
 
 //@ts-ignore
@@ -54,8 +54,45 @@ const getAllUrl = async (req: Request, res: Response) => {
   } catch (err: any) {}
 };
 
-const getUrl = async (req: Request, res: Response) => {};
+const getUrl = async (req: Request, res: Response) => {
+  console.log("getURl params", req.params.id);
 
-const DeleteUrl = async (req: Request, res: Response) => {};
+  const urlDetails = (await Url.find({ shorturl: req.params.id })) as any;
+
+  if (urlDetails.length === 0) {
+    return res.status(404).json({
+      success: false,
+      message: "shorturl doesn't exist",
+    });
+  }
+
+  return res.status(200).json({
+    success: true,
+    data: urlDetails,
+  });
+};
+
+const DeleteUrl = async (req: Request, res: Response) => {
+  const urlDetails = (await Url.find({ shorturl: req.params.id })) as any;
+  const deletedData = await Url.deleteOne(urlDetails?._id);
+
+  console.log("ABCD", deletedData);
+  if (deletedData.acknowledged) {
+    return res.status(200).json({
+      success: true,
+      message: "your url have been deleted",
+    });
+  } else if (!urlDetails) {
+    return res.status(404).json({
+      success: false,
+      message: "Original Url not found for the given short url",
+    });
+  } else {
+    return res.status(500).json({
+      success: false,
+      message: "Something went wrong while deleting url",
+    });
+  }
+};
 
 export { createUrl, getAllUrl, DeleteUrl, getUrl };
