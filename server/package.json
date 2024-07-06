@@ -2,11 +2,12 @@
   "name": "url-shortner",
   "version": "1.0.0",
   "description": "",
-  "main": "server.ts",
+  "main": "dist/server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "nodemon -r dotenv/config src/server.ts",
-    "start": "node src/server.ts"
+    "build": "npx tsx",
+    "prebuild": "npm i",
+    "dev": "nodemon -r dotenv/config dist/server.js",
+    "start": "node -r dotenv/config dist/server.js"
   },
   "author": "",
   "license": "ISC",
