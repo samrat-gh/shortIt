@@ -1,10 +1,9 @@
 import express from "express";
-import dotenv from "dotenv";
-// import { cors } from "cors";
+import "dotenv/config";
+
 import { ConnectToDB } from "./db/db";
 import shortUrl from "./routes/url";
 
-dotenv.config();
 const app = express();
 
 ConnectToDB();
