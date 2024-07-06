@@ -4,7 +4,7 @@
   "description": "",
   "main": "dist/server.js",
   "scripts": {
-    "build": "npx tsx",
+    "build": "npx tsc",
     "prebuild": "npm i",
     "dev": "nodemon -r dotenv/config dist/server.js",
     "start": "node -r dotenv/config dist/server.js"
