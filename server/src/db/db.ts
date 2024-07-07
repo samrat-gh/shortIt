@@ -3,6 +3,7 @@ const DB_NAME = "url-shortener";
 
 const ConnectToDB = async () => {
   try {
+    console.log("uri", process.env.MONGODB_URI);
     const userInstance = await mongoose.connect(
       `${process.env.MONGODB_URI}/${DB_NAME}`
     );
