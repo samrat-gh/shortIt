@@ -1,20 +1,18 @@
-const { BACKEND_API } = process.env;
+import { NextApiRequest } from "next";
 
-const GET = async (params: any) => {
-  console.log("hi I am here", params.params.url);
+const { BACKEND_URL } = process.env;
 
-  console.log(`${BACKEND_API}/api/shorturl/${params.params.url}`);
+const GET = async (req: NextApiRequest, params: any) => {
+  const { url } = params.params.url;
+  console.log(url);
   try {
-    const response = await fetch(
-      `${BACKEND_API}/api/shorturl/${params.params.url}`,
-      {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        cache: "no-cache",
+    const response = await fetch(`${BACKEND_URL}/api/shorturl/${url}`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
       },
-    );
+      cache: "no-cache",
+    });
     if (!response.ok) {
       console.log("Error Occured: ", response.status);
     }

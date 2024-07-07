@@ -4,7 +4,7 @@ const Page = async ({ params }: { params: { url: string } }) => {
   console.log(params.url);
 
   const res = await fetch(
-    `https://shortit-7r2p.onrender.com/api/shorturl/${params.url}`,
+    `${process.env.NEXT_PUBLIC_HOST_URL}/api/geturl/${params.url}`,
     {
       method: "GET",
     },
@@ -12,10 +12,6 @@ const Page = async ({ params }: { params: { url: string } }) => {
 
   if (!res.ok) {
     console.log(res);
-  }
-
-  if (res.ok) {
-    console.log("i");
   }
 
   const data = await res.json();

@@ -1,11 +1,11 @@
-const BACKEND_API = process.env.BACKEND_API;
+const { BACKEND_URL } = process.env;
 
 const POST = async (req: any) => {
   const { url } = await req.json();
   console.log(url);
 
   try {
-    const response = await fetch(`${BACKEND_API}/api/shorturl`, {
+    const response = await fetch(`${BACKEND_URL}/api/shorturl`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

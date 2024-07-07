@@ -3,10 +3,18 @@
 import { useForm } from "react-hook-form";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, ClipboardCopy } from "lucide-react";
+import Link from "next/link";
+
+import copy from "clipboard-copy";
+import { toast } from "sonner";
+import Spinner from "@/icons/Spinner";
 
 const Urlbox = () => {
   const [urlRes, setUrlRes] = useState<any>();
+
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+
   const {
     register,
     handleSubmit,
@@ -19,7 +27,13 @@ const Urlbox = () => {
     console.log("hello");
     console.log(data.url);
 
-    const res = await fetch("/api/seturl", {
+    let url = data.url;
+
+    if (url.endsWith("/")) {
+      url = url;
+    }
+    setIsLoading(true);
+    const res = await fetch(`/api/seturl`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -31,16 +45,24 @@ const Urlbox = () => {
 
     if (!res.ok) {
       console.log(res.status);
-      // Handle error here, e.g., setting an error message with setError
-      return;
     }
 
     const info = await res.json();
     console.log(info);
+    setIsLoading(false);
     // Reset form after successful submission
 
     setUrlRes(info);
     // reset();
+  };
+
+  const handleCopy = async (text: string) => {
+    try {
+      await copy(text);
+      toast("Url Copied to clipboard");
+    } catch (error) {
+      console.error("Failed to copy text to clipboard", error);
+    }
   };
 
   return (
@@ -67,7 +89,11 @@ const Urlbox = () => {
           type="submit"
           className="my-auto border-l-[0.25px] px-3 text-slate-400"
         >
-          <ArrowRight size={18} className="mx-2 inline" />
+          {isLoading ? (
+            <Spinner />
+          ) : (
+            <ArrowRight size={18} className="mx-2 inline" />
+          )}
         </button>
       </form>
       {errors.url && (
@@ -75,16 +101,34 @@ const Urlbox = () => {
       )}
 
       {urlRes?.success === true && (
-        <div className="mt-3 text-xs text-green-600">
-          {" "}
-          The ShortKey is {urlRes?.url}{" "}
+        <div className="mt-5 ">
+          <p className="mb-[2px] text-xs italic text-slate-300">
+            {" "}
+            Your shorturl is:{" "}
+          </p>
+          <div className="flex justify-between rounded-md bg-neutral-800 p-3 text-xs text-green-600 shadow-[inset_0px_20px_20px_10px_#00000024]">
+            <div>
+              <Link href={`${process.env.NEXT_PUBLIC_HOST_URL}/${urlRes?.url}`}>
+                {process.env.NEXT_PUBLIC_HOST_URL}/{urlRes?.url}
+              </Link>
+            </div>
+            <button
+              type="button"
+              onClick={() =>
+                handleCopy(`https://short-it-theta.vercel.app/${urlRes?.url}`)
+              }
+            >
+              <ClipboardCopy
+                size={16}
+                className="ml-3 inline text-slate-300 opacity-60 hover:opacity-100"
+              />
+            </button>
+          </div>
         </div>
       )}
+
       {urlRes?.success === false && (
-        <div className="mt-3 text-xs text-red-500">
-          {" "}
-          The ShortKey is {urlRes?.message}{" "}
-        </div>
+        <div className="mt-3 text-xs text-red-500"> {urlRes?.message} </div>
       )}
     </div>
   );
