@@ -1,8 +1,6 @@
-import { NextApiRequest } from "next";
-
 const { BACKEND_URL } = process.env;
 
-const GET = async (req: NextApiRequest, params: any) => {
+const GET = async (params: any) => {
   const { url } = params.params.url;
   console.log(url);
   try {
