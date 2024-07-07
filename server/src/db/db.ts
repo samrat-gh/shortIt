@@ -9,7 +9,7 @@ const ConnectToDB = async () => {
     );
     console.log("DB connected :", userInstance.connection.host);
   } catch (err: any) {
-    console.log("Error connecting to Databse");
+    console.log("Error connecting to Databse: ", err);
     process.exit(1);
   }
 };
