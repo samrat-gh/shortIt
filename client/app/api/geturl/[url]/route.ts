@@ -1,21 +1,24 @@
 const { BACKEND_URL } = process.env;
 
-const GET = async (params: any) => {
-  const { url } = params.params.url;
-  console.log(url);
+const GET = async (params: { params: { url: string } }) => {
+  console.log("URL ->", params);
   try {
-    const response = await fetch(`${BACKEND_URL}/api/shorturl/${url}`, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
+    const response = await fetch(
+      `${BACKEND_URL}/api/shorturl/${params.params.url}`,
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        cache: "no-cache",
       },
-      cache: "no-cache",
-    });
+    );
     if (!response.ok) {
       console.log("Error Occured: ", response.status);
     }
 
     const data = await response.json();
+
     console.log("response: ", data);
     return new Response(JSON.stringify(data));
   } catch (error) {

@@ -1,14 +1,21 @@
 import { Request, response, Response } from "express";
 import { Url } from "../models/Url.model";
 
+import validator from "validator";
+
 //@ts-ignore
 import { nanoid } from "nanoid";
 
 const createUrl = async (req: Request, res: Response) => {
   try {
     const { fullurl } = req.body;
-    console.log(req.body);
-    console.log("The Full URL is :", fullurl);
+
+    if (!validator.isURL(fullurl)) {
+      return res.status(406).json({
+        success: false,
+        message: "Invalid URL! Please enter a valid url",
+      });
+    }
 
     const urlInstance = await Url.find({ url: fullurl });
     console.log("UrlInstance", urlInstance);
