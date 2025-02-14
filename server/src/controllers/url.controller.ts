@@ -73,6 +73,12 @@ const getUrl = async (req: Request, res: Response) => {
     });
   }
 
+  console.log("URL Details", urlDetails);
+  const count = await Url.findOneAndUpdate(
+    { shorturl: urlDetails[0].shorturl },
+    { clicks: urlDetails[0].clicks + 1 }
+  );
+  console.log("Count Increment", count);
   return res.status(200).json({
     success: true,
     data: urlDetails,

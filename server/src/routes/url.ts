@@ -12,6 +12,7 @@ const router = express.Router();
 router.post("/shorturl", createUrl);
 
 // To Get all the links
+// TODO : update link count on getUrl
 router.get("/shorturl", getAllUrl);
 
 // To Delete a route
