@@ -1,9 +1,7 @@
-import { redirect } from "next/navigation";
-
 const Page = async ({ params }: { params: { url: string } }) => {
   console.log(params.url);
 
-  const res = await fetch(`http://localhost:8000/api/shorturl/${params.url}`, {
+  const res = await fetch(`http://localhost:8000/api/shorturl`, {
     method: "GET",
     headers: {
       "Content-Type": "application/json",
@@ -18,19 +16,7 @@ const Page = async ({ params }: { params: { url: string } }) => {
   const data = await res.json();
   console.log("Hello: ", data);
 
-  if (data.success) {
-    console.log(data);
-    redirect(data.data[0].url);
-  } else {
-    return null;
-  }
-
-  return (
-    <div>
-      {params.url}
-      {/* {JSON.stringify(data)} */}
-    </div>
-  );
+  return <div>{JSON.stringify(data)}</div>;
 };
 
 export default Page;

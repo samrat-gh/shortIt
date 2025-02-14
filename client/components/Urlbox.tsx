@@ -28,7 +28,16 @@ const Urlbox = () => {
     console.log(data.url);
 
     let url = data.url;
-
+    if (url.startsWith("http://") || url.startsWith("https://")) {
+      url = data.url;
+    } else {
+      setError("url", {
+        type: "manual",
+        message: "URL must start with http:// or https://",
+      });
+      toast.error("URL must start with http:// or https://");
+      return null;
+    }
     if (url.endsWith("/")) {
       url = url;
     }
@@ -108,14 +117,14 @@ const Urlbox = () => {
           </p>
           <div className="flex justify-between rounded-md bg-neutral-800 p-3 text-xs text-green-600 shadow-[inset_0px_20px_20px_10px_#00000024]">
             <div>
-              <Link href={`${process.env.NEXT_PUBLIC_HOST_URL}/${urlRes?.url}`}>
+              <Link href={`/${urlRes?.url}`} target="_blank">
                 {process.env.NEXT_PUBLIC_HOST_URL}/{urlRes?.url}
               </Link>
             </div>
             <button
               type="button"
               onClick={() =>
-                handleCopy(`https://short-it-theta.vercel.app/${urlRes?.url}`)
+                handleCopy(`${process.env.NEXT_PUBLIC_HOST_URL}/${urlRes?.url}`)
               }
             >
               <ClipboardCopy
@@ -124,6 +133,12 @@ const Urlbox = () => {
               />
             </button>
           </div>
+        </div>
+      )}
+
+      {errors.url && (
+        <div className="mt-7 rounded-md border border-neutral-800 bg-gray-800 px-5 py-3 text-base text-slate-300 shadow-inner">
+          URL should like https://www.example.com
         </div>
       )}
 

@@ -16,8 +16,13 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className="bg-neutral-800">
-      <body className={inter.className}>
+    <html lang="en" className="bg-gray-800">
+      <body
+        className={
+          (inter.className,
+          "h-full w-full bg-gradient-to-b from-gray-800 via-blue-700 to-gray-900")
+        }
+      >
         {children}
         <Toaster />
       </body>
