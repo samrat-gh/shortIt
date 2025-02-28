@@ -4,8 +4,7 @@ const POST = async (req: Request) => {
   const { url } = await req.json();
   // console.log("URL ->", params);
   try {
-    //localhost:8000/api/shorturl/iYK6j84DxG
-    http: const response = await fetch(`${BACKEND_URL}/api/shorturl/${url}`, {
+    const response = await fetch(`${BACKEND_URL}/api/shorturl/${url}`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
