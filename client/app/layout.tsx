@@ -2,12 +2,14 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "@/styles/globals.css";
 import { Toaster } from "sonner";
+import Providers from "@/components/Providers";
 
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "ShortIt | URL shortener on a single go",
-  description: "solution to your long url",
+  title: "ShortIt - URL Shortener",
+  description:
+    "Transform your long URLs into short, memorable links in seconds",
 };
 
 export default function RootLayout({
@@ -16,14 +18,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className="bg-gray-800">
-      <body
-        className={
-          (inter.className,
-          "h-full w-full bg-gradient-to-b from-gray-800 via-blue-700 to-gray-900")
-        }
-      >
-        {children}
+    // bg-gray-800
+    <html lang="en" className="">
+      {/* "min-h-screen w-full bg-gradient-to-b from-gray-800 to-gray-900" */}
+      <body className={inter.className}>
+        <Providers>{children}</Providers>
         <Toaster />
       </body>
     </html>
