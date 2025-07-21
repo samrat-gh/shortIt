@@ -19,7 +19,7 @@ export default function RootLayout({
 }) {
   return (
     // bg-gray-800
-    <html lang="en" className="">
+    <html lang="en" className="min-h-screen bg-[#020617]">
       {/* "min-h-screen w-full bg-gradient-to-b from-gray-800 to-gray-900" */}
       <body className={inter.className}>
         <Providers>{children}</Providers>

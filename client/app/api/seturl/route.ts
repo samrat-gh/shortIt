@@ -2,7 +2,7 @@ const { BACKEND_URL } = process.env;
 
 const POST = async (req: any) => {
   const { url } = await req.json();
-  console.log(url);
+  console.log(url, BACKEND_URL);
 
   try {
     const response = await fetch(`${BACKEND_URL}/api/shorturl`, {
@@ -13,6 +13,7 @@ const POST = async (req: any) => {
       body: JSON.stringify({
         fullurl: url,
       }),
+      cache: "no-cache",
     });
     if (!response.ok) {
       console.log("Error Occured: ", response.status);
