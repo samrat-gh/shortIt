@@ -1,4 +1,4 @@
-import UrlBox from "@/components/Urlbox";
+import UrlBox from "@/components/url-box";
 
 const PatternGradient = ({ children }: { children?: React.ReactNode }) => {
   return (

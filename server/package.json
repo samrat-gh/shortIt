@@ -6,7 +6,7 @@
   "scripts": {
     "build": "npx tsc",
     "prebuild": "npm i",
-    "dev": "nodemon -r dotenv/config dist/server.js",
+    "dev": "nodemon --watch src --exec ts-node -r dotenv/config src/server.ts",
     "start": "node -r dotenv/config dist/server.js"
   },
   "author": "",

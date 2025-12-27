@@ -1,4 +1,4 @@
-import { Request, response, Response } from "express";
+import { Request, Response } from "express";
 import { Url } from "../models/Url.model";
 
 import validator from "validator";
@@ -8,7 +8,8 @@ import { nanoid } from "nanoid";
 
 const createUrl = async (req: Request, res: Response) => {
   try {
-    const { fullurl } = req.body;
+    const { fullurl, userId } = req.body;
+    console.log(userId);
 
     if (!validator.isURL(fullurl)) {
       return res.status(406).json({
@@ -17,24 +18,30 @@ const createUrl = async (req: Request, res: Response) => {
       });
     }
 
-    const urlInstance = await Url.find({ url: fullurl });
-    console.log("UrlInstance", urlInstance);
+    // To Avoid Duplicate URLs
+    // const urlInstance = await Url.find({ url: fullurl });
 
-    if (urlInstance.length > 0) {
-      res.status(409).json({
-        success: false,
-        message: "Duplicate entry, URL already exist",
-      });
-    } else {
-      const short = nanoid(10);
-      const shortUrl = await Url.create({ url: fullurl, shorturl: short });
-      console.log(shortUrl);
-      res.status(201).json({
-        success: true,
-        message: "URL entry Successful",
-        url: short,
-      });
-    }
+    // if (urlInstance.length > 0) {
+    //   res.status(409).json({
+    //     success: true,
+    //     data: urlInstance,
+
+    //     message: "Duplicate entry, URL already existssssss",
+    //   });
+    // }
+
+    const short = nanoid(10);
+    const shortUrl = await Url.create({
+      userId: userId,
+      url: fullurl,
+      shorturl: short,
+    });
+    console.log(shortUrl);
+    res.status(201).json({
+      success: true,
+      message: "URL entry Successful",
+      data: shortUrl,
+    });
   } catch (err: any) {
     res.status(500).json({
       success: false,

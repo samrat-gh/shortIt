@@ -8,6 +8,7 @@ import {
 
 const router = express.Router();
 
+
 // To Create new link
 router.post("/shorturl", createUrl);
 

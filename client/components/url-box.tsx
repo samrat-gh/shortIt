@@ -3,13 +3,14 @@
 import { LinkIcon, ClipboardCopy, Trash2, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import copy from "clipboard-copy";
 import { toast } from "sonner";
 import Link from "next/link";
 
-import LoginModel from "./login-model";
+import HistorySidebar from "./history-sidebar";
+import { generateUserId } from "@/lib/getUserId";
 
 interface UrlData {
   id: string;
@@ -21,10 +22,18 @@ interface UrlData {
 }
 
 export default function UrlBox() {
-  const [urls, setUrls] = useState<UrlData[]>([]);
+  const [url, setUrl] = useState<UrlData | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [isLoadingUrls, setIsLoadingUrls] = useState<boolean>(true);
+  const [userId, setUserId] = useState<string>("");
 
+  useEffect(() => {
+    if (window !== undefined) {
+      const uid = generateUserId();
+      setUserId(uid);
+    }
+  }, []);
+
+  console.log("User ID:", userId);
   const {
     register,
     handleSubmit,
@@ -34,6 +43,7 @@ export default function UrlBox() {
   } = useForm<{ url: string }>();
 
   const submitHandler = async (data: { url: string }) => {
+    console.log(data);
     const url = data.url;
     if (!url.startsWith("http://") && !url.startsWith("https://")) {
       setError("url", {
@@ -52,6 +62,7 @@ export default function UrlBox() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
+          uid: userId,
           url: data.url,
         }),
       });
@@ -61,9 +72,32 @@ export default function UrlBox() {
       const info = await res.json();
 
       if (info.success) {
-        setUrls(info.data);
+        console.log("infos", info.data);
+        setUrl(info.data);
         reset();
         toast.success("URL shortened successfully!");
+
+        // Store in localStorage for history sidebar
+        try {
+          const existing = localStorage.getItem("shortit_urls");
+          const existingUrls = existing ? JSON.parse(existing) : [];
+          const updatedUrls = Array.isArray(info.data)
+            ? info.data
+            : [info.data];
+
+          // Merge and deduplicate
+          const allUrls = [
+            ...updatedUrls,
+            ...existingUrls.filter(
+              (url: UrlData) =>
+                !updatedUrls.some((newUrl: UrlData) => newUrl.id === url.id),
+            ),
+          ];
+
+          localStorage.setItem("shortit_urls", JSON.stringify(allUrls));
+        } catch (storageError) {
+          console.error("Failed to save to localStorage:", storageError);
+        }
       } else {
         toast.error(info.message || "Failed to create URL");
       }
@@ -91,7 +125,7 @@ export default function UrlBox() {
 
       if (!res.ok) throw new Error("Failed to delete URL");
 
-      setUrls((prev) => prev.filter((url) => url.id !== id));
+      setUrl(null);
       toast.success("URL deleted successfully");
     } catch (error) {
       toast.error("Failed to delete URL");
@@ -99,7 +133,7 @@ export default function UrlBox() {
   };
 
   console.log("hello");
-  console.log(urls);
+  // console.log(urls);
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-between">
@@ -115,7 +149,7 @@ export default function UrlBox() {
           >
             Features
           </Link>
-          <LoginModel />
+          <HistorySidebar />
         </nav>
       </header>
 
@@ -138,9 +172,9 @@ export default function UrlBox() {
           >
             <div className="flex-1">
               <Input
-                type="url"
+                type="text"
                 placeholder="Paste your long URL here"
-                className="h-12 w-full"
+                className="h-12 w-full text-black"
                 {...register("url", {
                   required: {
                     value: true,
@@ -167,25 +201,25 @@ export default function UrlBox() {
             </Button>
           </form>
         </div>
-        {urls.length > 0 && (
+        {url && (
           <div
-            key={urls[0].id}
+            key={url.id}
             className="group relative mx-auto mt-7 w-full max-w-2xl overflow-hidden rounded-lg border border-gray-100 bg-white px-4 py-3 shadow-sm transition-all hover:shadow-md"
           >
             <div className="flex w-full items-center justify-between">
               <div className="min-w-0 flex-1">
                 <div className="flex items-center space-x-2">
                   <Link
-                    href={`/${urls[0].shorturl}`}
+                    href={`/${url.shorturl}`}
                     target="_blank"
                     className="text-sm font-medium text-emerald-500 transition-colors hover:text-emerald-600"
                   >
-                    {process.env.NEXT_PUBLIC_HOST_URL}/{urls[0].shorturl}
+                    {process.env.NEXT_PUBLIC_HOST_URL}/{url.shorturl}
                   </Link>
                   <button
                     onClick={() =>
                       handleCopy(
-                        `${process.env.NEXT_PUBLIC_HOST_URL}/${urls[0].shorturl}`,
+                        `${process.env.NEXT_PUBLIC_HOST_URL}/${url.shorturl}`,
                       )
                     }
                     className="rounded-md p-1 text-gray-400 opacity-0 transition-all hover:bg-gray-100 hover:text-emerald-500 group-hover:opacity-100"
@@ -196,26 +230,22 @@ export default function UrlBox() {
                 </div>
                 <div className="mt-1 flex items-center space-x-4 text-xs text-gray-500">
                   <Link
-                    href={urls[0].url}
+                    href={url.url}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="flex items-center space-x-1 hover:text-gray-700"
                   >
                     <ExternalLink size={12} />
-                    <span className="max-w-[200px] truncate">
-                      {urls[0].url}
-                    </span>
+                    <span className="max-w-[200px] truncate">{url.url}</span>
                   </Link>
-                  <span>•</span>
-                  <span>{urls[0].clicks} clicks</span>
-                  <span>•</span>
-                  <span>
-                    {new Date(urls[0].createdAt).toLocaleDateString()}
-                  </span>
+                  {/* <span>•</span>
+                  <span>{url.clicks} clicks</span> */}
+                  {/* <span>•</span>
+                  <span>{new Date(url.createdAt).to}</span> */}
                 </div>
               </div>
               <button
-                onClick={() => handleDelete(urls[0].id)}
+                onClick={() => handleDelete(url.id)}
                 className="ml-4 rounded-md p-2 text-gray-400 opacity-0 transition-all hover:bg-red-50 hover:text-red-500 group-hover:opacity-100"
                 aria-label="Delete URL"
               >
