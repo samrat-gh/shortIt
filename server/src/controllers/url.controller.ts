@@ -92,11 +92,39 @@ const getUrl = async (req: Request, res: Response) => {
   });
 };
 
+const getUrlByUser = async (req: Request, res: Response) => {
+  const { userId } = await req.body;
+  // console.log(req.body);
+  // console.log("userId <><><>", userId);
+  const urls = (await Url.find({ userId: userId })) as any;
+
+  try {
+    if (urls.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "shorturl doesn't exist",
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      data: urls,
+    });
+  } catch (err) {
+    return res.status(500).json({
+      success: false,
+      message: "Internal Server Error",
+      error: err,
+    });
+  }
+};
+
 const DeleteUrl = async (req: Request, res: Response) => {
-  const urlDetails = (await Url.find({ shorturl: req.params.id })) as any;
+  const urlDetails = (await Url.find({ _id: req.params.id }))[0] as any;
+  // console.log(urlDetails, req.params.id);
   const deletedData = await Url.deleteOne(urlDetails?._id);
 
-  console.log("ABCD", deletedData);
+  // console.log("deleted : ", deletedData);
   if (deletedData.acknowledged) {
     return res.status(200).json({
       success: true,
@@ -115,4 +143,36 @@ const DeleteUrl = async (req: Request, res: Response) => {
   }
 };
 
-export { createUrl, getAllUrl, DeleteUrl, getUrl };
+const DeleteAllUsersUrl = async (req: Request, res: Response) => {
+  const user = (await Url.find({ userId: req.params.userid }))[0] as any;
+  // console.log("User Id", req.params.userid);
+  // console.log("User", user);
+  const deletedData = await Url.deleteMany({ userId: req.params.userid });
+
+  console.log("deleted : ", deletedData);
+  if (deletedData.acknowledged) {
+    return res.status(200).json({
+      success: true,
+      message: "your url have been deleted",
+    });
+  } else if (user) {
+    return res.status(404).json({
+      success: false,
+      message: "User not found, invalid userid",
+    });
+  } else {
+    return res.status(500).json({
+      success: false,
+      message: "Something went wrong while deleting url",
+    });
+  }
+};
+
+export {
+  createUrl,
+  getAllUrl,
+  getUrlByUser,
+  DeleteUrl,
+  DeleteAllUsersUrl,
+  getUrl,
+};

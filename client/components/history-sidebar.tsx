@@ -21,6 +21,8 @@ import {
 import copy from "clipboard-copy";
 import { toast } from "sonner";
 import Link from "next/link";
+import { getUserId } from "@/lib/getUserId";
+import { ClearAllAlert } from "./clearAllAlert";
 
 interface UrlData {
   id: string;
@@ -35,57 +37,56 @@ export default function HistorySidebar() {
   const [open, setOpen] = useState(false);
   const [urls, setUrls] = useState<UrlData[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [userId, setUserId] = useState<string>();
 
   const fetchUrls = async () => {
     setIsLoading(true);
     try {
-      // First try to get from API
-      const response = await fetch("/api/geturl");
-      if (response.ok) {
-        const data = await response.json();
-        const urlsData = data.url || data.data || data.urls || data || [];
-        const urlsArray = Array.isArray(urlsData) ? urlsData : [];
+      if (userId) {
+        // console.log("Fetching URLs for userId:", userId);
+        const response = await fetch("/api/geturl/user", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            userId: userId,
+          }),
+          cache: "no-cache",
+        });
+        if (response.ok) {
+          const data = await response.json();
+          const urlsData = data.url || data.data || data.urls || data || [];
+          const urlsArray = Array.isArray(urlsData) ? urlsData : [];
 
-        // Transform MongoDB objects to match expected structure
-        const transformedUrls = urlsArray.map((url: any) => ({
-          id: url._id || url.id,
-          url: url.url,
-          shorturl: url.shorturl,
-          clicks: url.clicks || 0,
-          createdAt: url.createdAt,
-          updatedAt: url.updatedAt,
-        }));
+          // Transform MongoDB objects to match expected structure
+          const transformedUrls = urlsArray.map((url: any) => ({
+            id: url._id || url.id,
+            url: url.url,
+            shorturl: url.shorturl,
+            clicks: url.clicks || 0,
+            createdAt: url.createdAt,
+            updatedAt: url.updatedAt,
+          }));
 
-        setUrls(transformedUrls);
-        // Store in localStorage as backup
-        if (transformedUrls.length > 0) {
-          localStorage.setItem("shortit_urls", JSON.stringify(transformedUrls));
+          setUrls(transformedUrls);
         }
       } else {
         throw new Error("API not available");
       }
     } catch (error) {
       console.error("API Error, falling back to localStorage:", error);
-      // Fall back to localStorage
-      try {
-        const stored = localStorage.getItem("shortit_urls");
-        if (stored) {
-          const storedUrls = JSON.parse(stored);
-          setUrls(Array.isArray(storedUrls) ? storedUrls : []);
-        } else {
-          setUrls([]);
-        }
-      } catch (storageError) {
-        console.error("localStorage Error:", storageError);
-        setUrls([]);
-        toast.error("Failed to load URL history");
-      }
     } finally {
       setIsLoading(false);
     }
   };
 
   useEffect(() => {
+    if (window !== undefined) {
+      const uid = getUserId();
+      setUserId(uid);
+    }
+
     if (open) {
       fetchUrls();
     }
@@ -102,50 +103,56 @@ export default function HistorySidebar() {
 
   const handleDelete = async (id: string) => {
     try {
-      // Try to delete from API first
-      const res = await fetch(`/api/urls/${id}`, {
-        method: "DELETE",
+      const res = await fetch(`/api/deleteurl?id=${id}`, {
+        method: "GET",
       });
 
-      // Update local state regardless of API response
-      const updatedUrls = urls.filter((url) => url.id !== id);
-      setUrls(updatedUrls);
-
-      // Update localStorage
-      try {
-        localStorage.setItem("shortit_urls", JSON.stringify(updatedUrls));
-      } catch (storageError) {
-        console.error("Failed to update localStorage:", storageError);
+      if (!res.ok) {
+        console.log("response not ok", res.ok, res.status);
       }
+
+      const data = await res.json();
 
       if (!res.ok) {
-        console.warn("API delete failed, but removed locally");
+        console.log("API delete failed");
       }
 
-      toast.success("URL deleted successfully");
+      if (data.success) {
+        const updatedUrls = urls.filter((url) => url.id !== id);
+        setUrls(updatedUrls);
+
+        toast.success("URL deleted successfully");
+      }
     } catch (error) {
-      // Even if API fails, remove locally
-      const updatedUrls = urls.filter((url) => url.id !== id);
-      setUrls(updatedUrls);
-
-      try {
-        localStorage.setItem("shortit_urls", JSON.stringify(updatedUrls));
-      } catch (storageError) {
-        console.error("Failed to update localStorage:", storageError);
-      }
-
-      toast.success("URL deleted locally");
+      console.log(error);
+      toast.error("Could not delete URL");
     }
   };
 
-  const clearHistory = () => {
-    setUrls([]);
+  const clearHistory = async () => {
     try {
-      localStorage.removeItem("shortit_urls");
+      const res = await fetch(`/api/deleteallurl?userid=${userId}`, {
+        method: "GET",
+      });
+
+      if (!res.ok) {
+        console.log("response not ok", res.ok, res.status);
+      }
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        console.log("API delete failed");
+      }
+
+      if (data.success) {
+        setUrls([]);
+        toast.success("URL cleared successfully");
+      }
     } catch (error) {
-      console.error("Failed to clear localStorage:", error);
+      console.log(error);
+      toast.error("Could not delete URLs");
     }
-    toast.success("History cleared");
   };
 
   return (
@@ -176,14 +183,16 @@ export default function HistorySidebar() {
               {urls.length} {urls.length === 1 ? "URL" : "URLs"} saved
             </p>
             {urls.length > 0 && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={clearHistory}
-                className="text-red-600 hover:text-red-700"
-              >
-                Clear All
-              </Button>
+              <ClearAllAlert onSubmit={clearHistory}>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  // onClick={clearHistory}
+                  className="text-red-600 hover:text-red-700"
+                >
+                  Clear All
+                </Button>
+              </ClearAllAlert>
             )}
           </div>
 

@@ -10,7 +10,7 @@ import { toast } from "sonner";
 import Link from "next/link";
 
 import HistorySidebar from "./history-sidebar";
-import { generateUserId } from "@/lib/getUserId";
+import { getUserId } from "@/lib/getUserId";
 
 interface UrlData {
   id: string;
@@ -28,12 +28,12 @@ export default function UrlBox() {
 
   useEffect(() => {
     if (window !== undefined) {
-      const uid = generateUserId();
+      const uid = getUserId();
       setUserId(uid);
     }
   }, []);
 
-  console.log("User ID:", userId);
+  // console.log("User ID:", userId);
   const {
     register,
     handleSubmit,
@@ -43,8 +43,8 @@ export default function UrlBox() {
   } = useForm<{ url: string }>();
 
   const submitHandler = async (data: { url: string }) => {
-    console.log(data);
-    const url = data.url;
+    const url = data.url.endsWith("/") ? data.url.slice(0, -1) : data.url;
+
     if (!url.startsWith("http://") && !url.startsWith("https://")) {
       setError("url", {
         type: "manual",
@@ -76,36 +76,12 @@ export default function UrlBox() {
         setUrl(info.data);
         reset();
         toast.success("URL shortened successfully!");
-
-        // Store in localStorage for history sidebar
-        try {
-          const existing = localStorage.getItem("shortit_urls");
-          const existingUrls = existing ? JSON.parse(existing) : [];
-          const updatedUrls = Array.isArray(info.data)
-            ? info.data
-            : [info.data];
-
-          // Merge and deduplicate
-          const allUrls = [
-            ...updatedUrls,
-            ...existingUrls.filter(
-              (url: UrlData) =>
-                !updatedUrls.some((newUrl: UrlData) => newUrl.id === url.id),
-            ),
-          ];
-
-          localStorage.setItem("shortit_urls", JSON.stringify(allUrls));
-        } catch (storageError) {
-          console.error("Failed to save to localStorage:", storageError);
-        }
-      } else {
-        toast.error(info.message || "Failed to create URL");
       }
-    } catch (error) {
-      toast.error("Failed to create URL");
-    } finally {
-      setIsLoading(false);
+    } catch (error: any) {
+      console.log(error.message);
+      toast.error("An error occurred while shortening the URL");
     }
+    setIsLoading(false);
   };
 
   const handleCopy = async (text: string) => {
@@ -118,6 +94,7 @@ export default function UrlBox() {
   };
 
   const handleDelete = async (id: string) => {
+    console.log("Deleting URL with id:", id);
     try {
       const res = await fetch(`/api/urls/${id}`, {
         method: "DELETE",
@@ -132,7 +109,6 @@ export default function UrlBox() {
     }
   };
 
-  console.log("hello");
   // console.log(urls);
 
   return (

@@ -1,9 +1,6 @@
 const { BACKEND_URL } = process.env;
 
 export async function GET(req: Request) {
-  console.log("Hello from GET URL");
-  console.log("BACKEND_URL:", BACKEND_URL);
-
   if (!BACKEND_URL) {
     console.error("BACKEND_URL is not defined");
     return new Response(JSON.stringify({ error: "BACKEND_URL is not set" }), {

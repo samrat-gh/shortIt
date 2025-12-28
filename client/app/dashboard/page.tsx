@@ -55,13 +55,18 @@ export default function Dashboard() {
 
   const handleDelete = async (id: string) => {
     try {
-      const res = await fetch(`/api/urls/${id}`, {
+      const res = await fetch(`/api/deleteurl?id=${id}`, {
         method: "DELETE",
       });
 
-      if (!res.ok) throw new Error("Failed to delete URL");
+      if (!res.ok) {
+        throw new Error("Failed to delete URL");
+      }
 
+      const response = await res.json();
+      console.log("Delete response:", response);
       setUrls((prev) => prev.filter((url) => url.id !== id));
+
       toast.success("URL deleted successfully");
     } catch (error) {
       toast.error("Failed to delete URL");

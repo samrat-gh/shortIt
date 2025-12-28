@@ -1,4 +1,4 @@
-const generateUserId = () => {
+const getUserId = () => {
   const userId = localStorage.getItem("si-uid");
 
   if (userId) {
@@ -12,4 +12,4 @@ const generateUserId = () => {
   return uid;
 };
 
-export { generateUserId };
+export { getUserId };
