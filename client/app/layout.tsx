@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
+import { Analytics } from "@vercel/analytics/next";
+
 import "@/styles/globals.css";
 import { Toaster } from "sonner";
 import Providers from "@/components/Providers";
@@ -22,6 +24,7 @@ export default function RootLayout({
     <html lang="en" className="min-h-screen bg-[#020617]">
       {/* "min-h-screen w-full bg-gradient-to-b from-gray-800 to-gray-900" */}
       <body className={inter.className}>
+        <Analytics />
         <Providers>{children}</Providers>
         <Toaster />
       </body>
